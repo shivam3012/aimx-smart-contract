@@ -10,10 +10,10 @@ contract Registry is OwnableUpgradeable {
     //12% usdc reward stored
     uint256 public rewardsCollected;
     address public companyWallet;
-    address public rewardTreasury;
+    address public rewardWallet;
     address public liquidityContrAddr;
-    address public purchaseMakerAddr;
-    address public whitelabelPurchaseMakerAddr;
+    address public capsuleMakerAddr;
+    address public whitelabelCapsuleMakerAddr;
 
     mapping(address => bool) public whitelisted;
     mapping(address => bool) public authorizedContract;
@@ -39,24 +39,24 @@ contract Registry is OwnableUpgradeable {
         liquidityContrAddr = _liquidityAddr;
     }
 
-    function updatePurchaseMakerContract(
-        address _purchaseMakerAddr
+    function updateCapsuleMakerContract(
+        address _capsuleMakerAddr
     ) external onlyOwner {
-        purchaseMakerAddr = _purchaseMakerAddr;
+        capsuleMakerAddr = _capsuleMakerAddr;
     }
 
-    function updateWhitelabelPurchaseMakerContract(
-        address _whitelabelPurchaseMakerAddr
+    function updateWhitelabelCapsuleMakerContract(
+        address _whitelabelCapsuleMakerAddr
     ) external onlyOwner {
-        whitelabelPurchaseMakerAddr = _whitelabelPurchaseMakerAddr;
+        whitelabelCapsuleMakerAddr = _whitelabelCapsuleMakerAddr;
     }
 
     function updateCompanyWallet(address _companyWallet) external onlyOwner {
         companyWallet = _companyWallet;
     }
 
-    function updateRewardTreasury(address _rewardTreasury) external onlyOwner {
-        rewardTreasury = _rewardTreasury;
+    function updateRewardWallet(address _rewardWallet) external onlyOwner {
+        rewardWallet = _rewardWallet;
     }
 
     function toggleWhitelistStatus(

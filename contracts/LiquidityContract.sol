@@ -18,8 +18,7 @@ contract LiquidityContract is OwnableUpgradeable {
     address public constant UNISWAP_ROUTER_V2 =
         0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
 
-    address public constant PAIR =
-        0x080aD650Ce2a7b3D1B579c7eBceB59ea452748dB;
+    address public constant PAIR = 0x080aD650Ce2a7b3D1B579c7eBceB59ea452748dB;
 
     address public constant AIMX = 0x22C74D9400088F7F35eC7C591Bbd1945A14b69bc;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
@@ -88,7 +87,7 @@ contract LiquidityContract is OwnableUpgradeable {
         );
 
         //mint aimx to sell from coin contract
-        MillionMeme(AIMX).mintTokenSupply(address(this), _sellAimxAmount);
+        AiMAX(AIMX).mintTokenSupply(address(this), _sellAimxAmount);
 
         uint256 _usdcOutput = SwapAlgorithm._swap(
             _sellAimxAmount,
@@ -106,7 +105,7 @@ contract LiquidityContract is OwnableUpgradeable {
         );
 
         //mint fpr lp from coin contract
-        MillionMeme(AIMX).mintTokenSupply(address(this), _aimxForLp);
+        AiMAX(AIMX).mintTokenSupply(address(this), _aimxForLp);
         SwapAlgorithm._addLiquidity(
             _usdcOutput,
             _aimxForLp,
@@ -120,7 +119,7 @@ contract LiquidityContract is OwnableUpgradeable {
         uint256 _buyUsdcAmt = ((_usdcIn * buyPer) / 100);
         _path[0] = USDC;
         _path[1] = AIMX;
-        uint256 _aimxStake = SwapAlgorithm._swap(
+        uint256 _aimxBuy = SwapAlgorithm._swap(
             _buyUsdcAmt,
             _msgSender(),
             UNISWAP_ROUTER_V2,
@@ -129,11 +128,8 @@ contract LiquidityContract is OwnableUpgradeable {
 
         //send 12% or remaining usdc amount in rewards contracts
         _reward12 = _usdcIn - _buyUsdcAmt;
-        IERC20(USDC).safeTransfer(
-            Registry(registry).rewardTreasury(),
-            _reward12
-        );
-        return (_aimxStake, _aimxOriginalReceive, _reward12);
+        IERC20(USDC).safeTransfer(Registry(registry).rewardWallet(), _reward12);
+        return (_aimxBuy, _aimxOriginalReceive, _reward12);
     }
 
     function updateSellPer(uint256 _sellPer) external onlyOwner {

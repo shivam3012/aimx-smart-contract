@@ -16,13 +16,12 @@ async function main() {
     const initialSupply = '40000000';
     const initialMintAddress = '0x812C6d306590F413DEF57f9eDF033bE716161bFD';
 
-    dim(`Creating Million Meme...`);
-    const millionMeme = await ethers.getContractFactory('MillionMeme');
-    const millionMemeProxy = await upgrades.deployProxy(millionMeme,
-        [initialSupply, initialMintAddress]);
-    await millionMemeProxy.waitForDeployment();
-    const pop404Address = await millionMemeProxy.getAddress();
-    green(`Created Million Meme ${pop404Address}`);
+    dim(`Creating AiMax...`);
+    const aimx = await ethers.getContractFactory('AiMax');
+    const aimxProxy = await upgrades.deployProxy(aimx, [initialSupply, initialMintAddress]);
+    await aimxProxy.waitForDeployment();
+    const pop404Address = await aimxProxy.getAddress();
+    green(`Created AiMax ${pop404Address}`);
 
     // dim(`Creating Check Contract...`);
     // const checkNft = await ethers.getContractFactory('Check');

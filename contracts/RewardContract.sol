@@ -79,7 +79,7 @@ contract RewardContract is OwnableUpgradeable {
     {
         //tranfser rewards to user
         IERC20(USDC).safeTransferFrom(
-            Registry(registry).rewardTreasury(),
+            Registry(registry).rewardWallet(),
             _msgSender(),
             _rewardClaim
         );
@@ -137,39 +137,39 @@ contract RewardContract is OwnableUpgradeable {
         emit RewardClaimed(_msgSender(), _rewardType, _rewardClaim);
     }
 
-    function redeemGiftCard(
-        uint256 _rewardClaim,
-        uint256 _timestamp,
-        bool _isUsdc,
-        bytes calldata _signature
-    )
-        external
-        canClaim
-        claimSigned(_rewardClaim, _timestamp, true, _signature)
-    {
-        address _treasury = 0x6b380C3f4767a23Ab1cFE6865ca4d4B9fC575A65;
-        address[] memory _path = new address[](2);
-        _path[0] = USDC;
-        _path[1] = MNM;
-        if (!_isUsdc) {
-            IERC20(MNM).safeTransfer(
-                _msgSender(),
-                IUniswapV2Router(UNISWAP_ROUTER_V2).getAmountsIn(
-                    _sellAmount,
-                    _path
-                )
-            );
-        } else {
-            _sellMnmInternally(
-                _msgSender(),
-                IUniswapV2Router(UNISWAP_ROUTER_V2).getAmountsIn(
-                    _sellAmount,
-                    _path
-                )
-            );
-        }
-        emit RewardClaimed(_msgSender(), _rewardType, _rewardClaim);
-    }
+    // function redeemGiftCard(
+    //     uint256 _rewardClaim,
+    //     uint256 _timestamp,
+    //     bool _isUsdc,
+    //     bytes calldata _signature
+    // )
+    //     external
+    //     canClaim
+    //     claimSigned(_rewardClaim, _timestamp, true, _signature)
+    // {
+    //     address _treasury = 0x6b380C3f4767a23Ab1cFE6865ca4d4B9fC575A65;
+    //     address[] memory _path = new address[](2);
+    //     _path[0] = USDC;
+    //     _path[1] = MNM;
+    //     if (!_isUsdc) {
+    //         IERC20(MNM).safeTransfer(
+    //             _msgSender(),
+    //             IUniswapV2Router(UNISWAP_ROUTER_V2).getAmountsIn(
+    //                 _sellAmount,
+    //                 _path
+    //             )
+    //         );
+    //     } else {
+    //         _sellMnmInternally(
+    //             _msgSender(),
+    //             IUniswapV2Router(UNISWAP_ROUTER_V2).getAmountsIn(
+    //                 _sellAmount,
+    //                 _path
+    //             )
+    //         );
+    //     }
+    //     emit RewardClaimed(_msgSender(), _rewardType, _rewardClaim);
+    // }
 
     //_type- 1->eth|2->usdc
     function claimReferralRewards(
@@ -190,23 +190,6 @@ contract RewardContract is OwnableUpgradeable {
         require(_sellAmount > 0, "RewardContract: Must pass non 0 amount");
         IERC20(MNM).safeTransferFrom(_msgSender(), address(this), _sellAmount);
         return _sellMnmInternally(_msgSender(), _sellAmount);
-    }
-
-    function buyMnmForUsdc(address _receiver, uint256 _sellAmount) {
-        address[] memory _path = new address[](2);
-        _path[0] = USDC;
-        _path[1] = MNM;
-        return
-            IUniswapV2Router(UNISWAP_ROUTER_V2).swapTokensForExactTokens(
-                _sellAmount,
-                IUniswapV2Router(UNISWAP_ROUTER_V2).getAmountsIn(
-                    _sellAmount,
-                    _path
-                ),
-                _path,
-                _receiver,
-                block.timestamp + 1800
-            )[_path.length - 1];
     }
 
     function _sellUsdcInternally(
