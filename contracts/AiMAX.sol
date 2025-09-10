@@ -16,12 +16,12 @@ contract AiMAX is ERC20BurnableUpgradeable, OwnableUpgradeable {
     mapping(address => bool) public allowed;
 
     modifier onlyAllowed() {
-        require(allowed[_msgSender()], "MillionMeme: Not whitelisted");
+        require(allowed[_msgSender()], "AiMAX: Not whitelisted");
         _;
     }
 
     function initialize() external initializer {
-        __ERC20_init("help", "help");
+        __ERC20_init("AiMAX", "AIMX");
         __ERC20Burnable_init();
         __Ownable_init(_msgSender());
         whitelist[_msgSender()] = true;
@@ -56,6 +56,14 @@ contract AiMAX is ERC20BurnableUpgradeable, OwnableUpgradeable {
 
     function addToWhitelist(address _addr) external onlyOwner {
         whitelist[_addr] = true;
+    }
+
+    function addToAllowedList(address _addr) external onlyOwner {
+        allowed[_addr] = true;
+    }
+
+    function removeFromAllowedList(address _addr) external onlyOwner {
+        allowed[_addr] = false;
     }
 
     function removeFromWhitelist(address _addr) external onlyOwner {
