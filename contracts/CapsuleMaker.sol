@@ -6,6 +6,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import "./LiquidityContract.sol";
 import "./uniswap/SwapAlgorithm.sol";
 import "./Registry.sol";
+import "./StarsCapsule.sol";
 
 contract CapsuleMaker is OwnableUpgradeable {
     using SafeERC20 for IERC20;
@@ -30,6 +31,8 @@ contract CapsuleMaker is OwnableUpgradeable {
     address public constant AIMX = 0x22C74D9400088F7F35eC7C591Bbd1945A14b69bc;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+    address public constant CAPSULE =
+        0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
 
     address public registry;
     //5%
@@ -112,6 +115,9 @@ contract CapsuleMaker is OwnableUpgradeable {
             _aimxCreator = (_aimxBuy * creatorPer) / 10000;
             IERC20(AIMX).safeTransfer(_creator, _aimxCreator);
         }
+
+        //sends NFTs
+        StarsCapsule(payable(CAPSULE)).batchMint(_msgSender(), _nftCount);
 
         emit Purchased(
             PurchaseData(
