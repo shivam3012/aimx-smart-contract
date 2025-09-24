@@ -12,16 +12,14 @@ function green() {
 async function main() {
     const [deployer] = await ethers.getSigners();
 
-    const liquidityWallet = '0xb396f64C52B5C4b7a787b7e3121f7889410EF034';
-    const companyWallet = '0xb396f64C52B5C4b7a787b7e3121f7889410EF034';
-    const rewardWallet = '0xb396f64C52B5C4b7a787b7e3121f7889410EF034';
+    const liquidityWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
+    const companyWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
+    const rewardWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
+    const registryAddress = '0xbC13DF9d7E6E8Ef3882202a1AE353A9eDB99b6a5'
 
-    dim(`Creating Registry Contract...`);
-    const registry = await ethers.getContractFactory('Registry');
-    const registryProxy = await upgrades.deployProxy(registry, [companyWallet]);
-    await registryProxy.waitForDeployment();
-    const registryAddress = await registryProxy.getAddress();
-    green(`Created Registry Contract ${registryAddress}`);
+    dim(`Attaching Registry Contract...`);
+    const registryProxy = await ethers.getContractAt('Registry', registryAddress);
+    green(`Attached Registry Contract ${registryAddress}`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     dim(`Creating Liquidity Contract...`);
@@ -30,14 +28,6 @@ async function main() {
     await liqidityProxy.waitForDeployment();
     const liquidityAddress = await liqidityProxy.getAddress();
     green(`Created Liquidity Contract ${liquidityAddress}`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    await registryProxy.updateLiquidityContract(liquidityAddress);
-    green(`Added Liquidity Contract in Registry`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    await registryProxy.updateRewardWallet(rewardWallet);
-    green(`Added Reward Treasury in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     dim(`Creating Capsule Maker...`);
@@ -56,10 +46,17 @@ async function main() {
     green(`Set authorized purchase maker to call liquidity contract`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    await registryProxy.setAuthorizedContract(whitelabelCapsuleMakerAddress, true);
-    green(`Set authorized whitelabel purchase maker to call liquidity contract`);
+    await registryProxy.updateLiquidityContract(liquidityAddress);
+    green(`Added Liquidity Contract in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
+    await registryProxy.updateRewardWallet(rewardWallet);
+    green(`Added Reward Treasury in Registry`);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    await registryProxy.updateRewardWallet(companyWallet);
+    green(`Added Company Treasury in Registry`);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 }
 
 main()

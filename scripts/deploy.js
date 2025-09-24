@@ -13,15 +13,31 @@ async function main() {
     const [deployer] = await ethers.getSigners();
 
     //4 miilion
-    const initialSupply = '40000000';
-    const initialMintAddress = '0x812C6d306590F413DEF57f9eDF033bE716161bFD';
+    const initialSupply = '138000000000000000000000000';
+    const initialMintAddress = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
 
     dim(`Creating AiMax...`);
-    const aimx = await ethers.getContractFactory('AiMax');
+    const aimx = await ethers.getContractFactory('AiMAX');
     const aimxProxy = await upgrades.deployProxy(aimx, [initialSupply, initialMintAddress]);
     await aimxProxy.waitForDeployment();
-    const pop404Address = await aimxProxy.getAddress();
-    green(`Created AiMax ${pop404Address}`);
+    const aimxAddress = await aimxProxy.getAddress();
+    green(`Created AiMax ${aimxAddress}`);
+
+    dim(`Creating Registry Contract...`);
+    const registry = await ethers.getContractFactory('Registry');
+    const registryProxy = await upgrades.deployProxy(registry, []);
+    await registryProxy.waitForDeployment();
+    const registryAddress = await registryProxy.getAddress();
+    green(`Created Registry Contract ${registryAddress}`);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    dim(`Creating Star Capsule...`);
+    const starCapsule = await ethers.getContractFactory('StarsCapsule');
+    const starCapsuleProxy = await upgrades.deployProxy(starCapsule, ["staradam", "staradam", "0x"]);
+    await starCapsuleProxy.waitForDeployment();
+    const starCapsuleAddress = await starCapsuleProxy.getAddress();
+    green(`Created Star Capsule ${starCapsuleAddress}`);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // dim(`Creating Check Contract...`);
     // const checkNft = await ethers.getContractFactory('Check');

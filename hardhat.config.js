@@ -10,7 +10,7 @@ module.exports = {
         enabled: true,
         runs: 200
       },
-      evmVersion: "paris"
+      // evmVersion: "paris"
     }
   },
 
@@ -26,7 +26,7 @@ module.exports = {
     base: {
       chainId: 8453,
       url: process.env.BASE_HTTP,
-      // accounts: [`0x${process.env.PRIVATE_KEY_BASE}`],
+      accounts: [`0x${process.env.PRIVATE_KEY_BASE}`],
     }
   }
 };

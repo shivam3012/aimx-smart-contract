@@ -12,7 +12,7 @@
     "start": "npx hardhat run scripts/deployAll.js",
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "deploy": "npx hardhat run scripts/deploy.js --network",
-    "deploy-algo": "npx hardhat run scripts/stakingAlgo.js --network",
+    "deploy-algo": "npx hardhat run scripts/purchaseAlgo.js --network",
     "deploy-gift-card": "npx hardhat run scripts/giftCardDeploy.js --network",
     "upgrade-contract": "npx hardhat run scripts/upgrade.js --network"
   },
@@ -32,7 +32,7 @@
     "chai": "^4.3.4",
     "chalk": "^4.1.2",
     "dotenv": "^10.0.0",
-    "ethers": "^6.8.0",
+    "ethers": "^6.15.0",
     "hardhat": "^2.18.2",
     "hardhat-abi-exporter": "^2.0.8",
     "prettier": "^2.3.2",

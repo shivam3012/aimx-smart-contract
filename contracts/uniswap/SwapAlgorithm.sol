@@ -43,6 +43,24 @@ library SwapAlgorithm {
         );
     }
 
+function _addLiquidityETH(
+        uint256 _amountToken,
+        uint256 _ethValue,
+        address _token,
+        address _router,
+        address _receiver
+    ) internal returns (uint256 _liquidity) {
+        //approve nrgy coins to uniswap
+        (, , _liquidity) = IUniswapV2Router(_router).addLiquidityETH{value: _ethValue}(
+            _token,
+            _amountToken,
+            0,
+            0,
+            _receiver,
+            block.timestamp + 1800
+        );
+    }
+
     function _removeLiquidity(
         uint256 _lpIn,
         address _receiver,
@@ -73,7 +91,7 @@ library SwapAlgorithm {
         address[] memory _path
     ) internal returns (uint256) {
         return
-            IUniswapV2Router(_router).swapExactETHForTokens{value: msg.value}(
+            IUniswapV2Router(_router).swapExactETHForTokens{value: _amount}(
                 getOutputAmount(_amount, _path, _router),
                 _path,
                 _receiver,
@@ -89,6 +107,22 @@ library SwapAlgorithm {
     ) internal returns (uint256) {
         return
             IUniswapV2Router(_router).swapExactTokensForTokens(
+                _amount,
+                getOutputAmount(_amount, _path, _router),
+                _path,
+                _receiver,
+                block.timestamp + 1800
+            )[_path.length - 1];
+    }
+
+     function _swapTokenForEth(
+        uint256 _amount,
+        address _receiver,
+        address _router,
+        address[] memory _path
+    ) internal returns (uint256) {
+        return
+            IUniswapV2Router(_router).swapExactTokensForETH(
                 _amount,
                 getOutputAmount(_amount, _path, _router),
                 _path,

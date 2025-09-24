@@ -138,12 +138,6 @@ contract StarsCapsule is
         allowed[_addr] = false;
     }
 
-    function _burn(
-        uint256 _tokenId
-    ) internal override(ERC721Upgradeable) {
-        super._burn(_tokenId);
-    }
-
     function tokenURI(
         uint256 _tokenId
     )

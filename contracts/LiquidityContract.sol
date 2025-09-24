@@ -18,9 +18,10 @@ contract LiquidityContract is OwnableUpgradeable {
     address public constant UNISWAP_ROUTER_V2 =
         0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
 
-    address public constant PAIR = 0x080aD650Ce2a7b3D1B579c7eBceB59ea452748dB;
+    address public constant PAIR = 0x7bD28DEAAe1c78ce8aD3f9dD627F4f7d72B3481e;
 
-    address public constant AIMX = 0x22C74D9400088F7F35eC7C591Bbd1945A14b69bc;
+    address public constant AIMX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
+    address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant QUOTER = 0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a;
     uint256 public sellPer;
@@ -35,8 +36,8 @@ contract LiquidityContract is OwnableUpgradeable {
         address _registry
     ) external initializer {
         __Ownable_init(_msgSender());
-        //42%
-        sellPer = 42;
+        //66%
+        sellPer = 66;
         //88%-- reward is 12%
         buyPer = 88;
         //12%
@@ -55,33 +56,24 @@ contract LiquidityContract is OwnableUpgradeable {
     }
 
     function performLiqudityOp(
-        uint256 _usdcIn
-    ) external returns (uint256, uint256, uint256 _reward12) {
+        uint256 _ethIn
+    ) external payable returns (uint256, uint256 _reward12) {
         require(
             Registry(registry).authorizedContract(_msgSender()),
             "LiquidityContract: Only authorized"
         );
-        IERC20(USDC).safeTransferFrom(_msgSender(), address(this), _usdcIn);
 
-        //get user actual aimx given with usdc input
+        //get user actual aimx given with eth input
         address[] memory _path = new address[](2);
-        _path[0] = USDC;
-        _path[1] = AIMX;
-
-        uint256 _aimxOriginalReceive = SwapAlgorithm.getOutputAmount(
-            _usdcIn,
-            _path,
-            UNISWAP_ROUTER_V2
-        );
 
         _path[0] = AIMX;
-        _path[1] = USDC;
+        _path[1] = WETH;
 
-        //sell 42% aimx for usdc
-        //42% of usdc in terms of aimx will be sold
-        //means aimx is sold to get usdc
+        //sell 66% aimx for eth
+        //66% of eth in terms of aimx will be sold
+        //means aimx is sold to get eth
         uint256 _sellAimxAmount = SwapAlgorithm.getInputAmount(
-            ((_usdcIn * sellPer) / 100),
+            ((_ethIn * sellPer) / 100),
             _path,
             UNISWAP_ROUTER_V2
         );
@@ -89,7 +81,7 @@ contract LiquidityContract is OwnableUpgradeable {
         //mint aimx to sell from coin contract
         AiMAX(AIMX).mintTokenSupply(address(this), _sellAimxAmount);
 
-        uint256 _usdcOutput = SwapAlgorithm._swap(
+        uint256 _ethOutput = SwapAlgorithm._swapTokenForEth(
             _sellAimxAmount,
             address(this),
             UNISWAP_ROUTER_V2,
@@ -98,38 +90,40 @@ contract LiquidityContract is OwnableUpgradeable {
 
         //add liquidity-send lp to reward contract
         uint256 _aimxForLp = SwapAlgorithm._secondTokenAmountForLp(
-            (_usdcOutput * liquidityPer) / 100,
+            (_ethOutput * liquidityPer) / 100,
             PAIR,
-            USDC,
+            WETH,
             AIMX
         );
 
         //mint fpr lp from coin contract
         AiMAX(AIMX).mintTokenSupply(address(this), _aimxForLp);
-        SwapAlgorithm._addLiquidity(
-            _usdcOutput,
-            _aimxForLp,
-            USDC,
+
+        IUniswapV2Router(UNISWAP_ROUTER_V2).addLiquidityETH{value: _ethOutput}(
             AIMX,
-            UNISWAP_ROUTER_V2,
-            liquidityWallet
+            _aimxForLp,
+            0,
+            0,
+            msg.sender,
+            block.timestamp + 1800
         );
 
-        //buy 88% aimx with usdc
-        uint256 _buyUsdcAmt = ((_usdcIn * buyPer) / 100);
-        _path[0] = USDC;
+        //buy 88% aimx with eth
+        uint256 _buyEthAmt = ((_ethIn * buyPer) / 100);
+        _path[0] = WETH;
         _path[1] = AIMX;
-        uint256 _aimxBuy = SwapAlgorithm._swap(
-            _buyUsdcAmt,
+        uint256 _aimxPurchased = SwapAlgorithm._swapEth(
+            _buyEthAmt,
             _msgSender(),
             UNISWAP_ROUTER_V2,
             _path
         );
 
-        //send 12% or remaining usdc amount in rewards contracts
-        _reward12 = _usdcIn - _buyUsdcAmt;
-        IERC20(USDC).safeTransfer(Registry(registry).rewardWallet(), _reward12);
-        return (_aimxBuy, _aimxOriginalReceive, _reward12);
+        //send 12% or remaining Eth amount in rewards contracts
+        _reward12 = _ethIn - _buyEthAmt;
+        payable(Registry(registry).rewardWallet()).transfer(_reward12);
+        IERC20(AIMX).safeTransfer(_msgSender(), _aimxPurchased);
+        return (_aimxPurchased, _reward12);
     }
 
     function updateSellPer(uint256 _sellPer) external onlyOwner {
@@ -166,4 +160,6 @@ contract LiquidityContract is OwnableUpgradeable {
     function recoverETH() external onlyOwner {
         payable(_msgSender()).transfer(address(this).balance);
     }
+
+    receive() external payable {}
 }

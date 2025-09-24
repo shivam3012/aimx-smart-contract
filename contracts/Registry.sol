@@ -13,14 +13,12 @@ contract Registry is OwnableUpgradeable {
     address public rewardWallet;
     address public liquidityContrAddr;
     address public capsuleMakerAddr;
-    address public whitelabelCapsuleMakerAddr;
 
     mapping(address => bool) public whitelisted;
     mapping(address => bool) public authorizedContract;
 
-    function initialize(address _companyWallet) external initializer {
+    function initialize() external initializer {
         __Ownable_init(_msgSender());
-        companyWallet = _companyWallet;
     }
 
     /*
@@ -43,12 +41,6 @@ contract Registry is OwnableUpgradeable {
         address _capsuleMakerAddr
     ) external onlyOwner {
         capsuleMakerAddr = _capsuleMakerAddr;
-    }
-
-    function updateWhitelabelCapsuleMakerContract(
-        address _whitelabelCapsuleMakerAddr
-    ) external onlyOwner {
-        whitelabelCapsuleMakerAddr = _whitelabelCapsuleMakerAddr;
     }
 
     function updateCompanyWallet(address _companyWallet) external onlyOwner {

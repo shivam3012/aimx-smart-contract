@@ -12,12 +12,12 @@ function green() {
 async function main() {
     const [deployer] = await ethers.getSigners();
 
-    const artifactName = 'MillionMeme'
-    const contractAddress = '0x22C74D9400088F7F35eC7C591Bbd1945A14b69bc'
+    const artifactName = 'LiquidityContract'
+    const contractAddress = '0xAd1718C61470282E131dEa70B53Ff46CaEEFE9Ad'
 
     const customNft = await ethers.getContractFactory(artifactName);
 
-    console.log("customNft", customNft)
+    // console.log("customNft", customNft)
 
     console.log(`Upgrading ${artifactName}...`);
     await upgrades.upgradeProxy(contractAddress, customNft);
