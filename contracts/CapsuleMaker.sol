@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "./LiquidityContract.sol";
 import "./uniswap/SwapAlgorithm.sol";
 import "./Registry.sol";
@@ -12,6 +15,7 @@ import "./AiMAX.sol";
 
 contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
+    using ECDSA for bytes32;
 
     struct PurchaseData {
         address user;
@@ -23,6 +27,15 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 creatorAimx;
         uint256 nftCount;
         uint256 coinPrice; // Current price when purchased
+    }
+
+    struct BuyParams {
+        address creator;
+        address l1;
+        address l2;
+        uint256 amount;
+        uint256 aimxAmount;
+        uint256 nftCount;
     }
 
     event Purchased(PurchaseData _purchase);
@@ -45,19 +58,16 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     address public registry;
     uint256 public referralPer; // 5%
     uint256 public creatorPer; // 2%
-
     uint256 public basketPrice;
     uint256 public ethPriceTolerance;
 
     // Track locked tokens per user (backend will manage which tokens belong to which baskets)
     mapping(address => uint256) public lockedTokens;
 
-    // Backend authorization for unlocking tokens
-    mapping(address => bool) public authorized;
-
     modifier onlyAuthorized() {
         require(
-            authorized[_msgSender()] || _msgSender() == owner(),
+            Registry(registry).whitelisted(_msgSender()) ||
+                _msgSender() == owner(),
             "CapsuleMaker: Not authorized"
         );
         _;
@@ -83,32 +93,42 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     // Buy packages with USDC
     function buyWithUsdc(
-        address _creator,
-        address _l1,
-        address _l2,
-        uint256 _amount,
-        uint256 _aimxAmount,
-        uint256 _nftCount
+        BuyParams calldata _params,
+        bytes calldata _signature
     ) external nonReentrant {
+        // Verify signature
+        _verifySignature(_msgSender(), _params, _signature);
+
         // Must be multiple of $250
         require(
-            _amount != 0 && _amount >= _nftCount * basketPrice,
+            _params.amount != 0 &&
+                _params.amount >= _params.nftCount * basketPrice,
             "CapsuleMaker: Amount must be multiple of $250"
         );
-        IERC20(USDC).safeTransferFrom(_msgSender(), address(this), _amount);
-        _amount = _convertUsdcToEth(_amount);
-        _buy(_creator, _l1, _l2, _amount, _aimxAmount, _nftCount);
+        IERC20(USDC).safeTransferFrom(
+            _msgSender(),
+            address(this),
+            _params.amount
+        );
+        uint256 _convertedUsdc = _convertUsdcToEth(_params.amount);
+        _buy(
+            _params.creator,
+            _params.l1,
+            _params.l2,
+            _convertedUsdc,
+            _params.aimxAmount,
+            _params.nftCount
+        );
     }
 
     // Buy packages with ETH
     function buyWithEth(
-        address _creator,
-        address _l1,
-        address _l2,
-        uint256 _amount,
-        uint256 _aimxAmount,
-        uint256 _nftCount
+        BuyParams calldata _params,
+        bytes calldata _signature
     ) external payable nonReentrant {
+        // Verify signature
+        _verifySignature(_msgSender(), _params, _signature);
+
         require(msg.value > 0, "CapsuleMaker: Must pass non 0 ETH amount");
         address[] memory _path = new address[](2);
         _path[0] = WETH;
@@ -120,10 +140,18 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
         // Check if user sent enough ETH for requested packages
         require(
-            _estimatedUsdc >= (_nftCount * basketPrice) - ethPriceTolerance,
+            _estimatedUsdc >=
+                (_params.nftCount * basketPrice) - ethPriceTolerance,
             "CapsuleMaker: Amount must be multiple of $250"
         );
-        _buy(_creator, _l1, _l2, _amount, _aimxAmount, _nftCount);
+        _buy(
+            _params.creator,
+            _params.l1,
+            _params.l2,
+            _params.amount,
+            _params.aimxAmount,
+            _params.nftCount
+        );
     }
 
     function _buy(
@@ -146,8 +174,8 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(_aimxAmount >= _aimxBuy, "CapsuleMaker: Incorrect Aimx Value");
 
         uint256 _aimxReferral = (_aimxAmount * referralPer) / 10000;
-        AiMAX(AIMX).mintTokenSupply(_l1, _aimxReferral);
-        AiMAX(AIMX).mintTokenSupply(_l2, _aimxReferral);
+        AiMAX(payable(AIMX)).mintTokenSupply(_l1, _aimxReferral);
+        AiMAX(payable(AIMX)).mintTokenSupply(_l2, _aimxReferral);
 
         uint256 _aimxCreator;
         if (_creator != address(0)) {
@@ -238,6 +266,33 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         return SwapAlgorithm.getOutputAmount(1e18, _path, UNISWAP_ROUTER_V2);
     }
 
+    function _verifySignature(
+        address _user,
+        BuyParams calldata _params,
+        bytes calldata _signature
+    ) internal view {
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                _user,
+                _params.creator,
+                _params.l1,
+                _params.l2,
+                _params.amount,
+                _params.aimxAmount,
+                _params.nftCount,
+                address(this)
+            )
+        );
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(
+            messageHash
+        );
+        address signer = ethSignedMessageHash.recover(_signature);
+        require(
+            Registry(registry).trustedSigner(signer),
+            "CapsuleMaker: Invalid signature"
+        );
+    }
+
     // View functions
     function getUserTokenSummary(
         address user
@@ -263,10 +318,6 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     // Admin functions
     function setRegistry(address _registry) external onlyOwner {
         registry = _registry;
-    }
-
-    function setAuthorized(address _addr, bool _status) external onlyOwner {
-        authorized[_addr] = _status;
     }
 
     function setReferralPer(uint256 _referralPer) external onlyOwner {

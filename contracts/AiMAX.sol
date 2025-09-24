@@ -111,4 +111,6 @@ contract AiMAX is ERC20BurnableUpgradeable, OwnableUpgradeable {
         }
         super._update(from, to, amount);
     }
+
+    receive() external payable {}
 }

@@ -16,6 +16,7 @@ contract Registry is OwnableUpgradeable {
 
     mapping(address => bool) public whitelisted;
     mapping(address => bool) public authorizedContract;
+    mapping(address => bool) public trustedSigner;
 
     function initialize() external initializer {
         __Ownable_init(_msgSender());
@@ -63,6 +64,19 @@ contract Registry is OwnableUpgradeable {
         bool _status
     ) external onlyOwner {
         authorizedContract[_addr] = _status;
+    }
+
+    /**
+     * enables an address to trustedSigner
+     * @param _wallet the address to set
+     * @param _status status to set
+     */
+    function setTrustedSigner(
+        address _wallet,
+        bool _status
+    ) external onlyOwner {
+        require(_wallet != address(0), "Zero address");
+        trustedSigner[_wallet] = _status;
     }
 
     function recoverExcessToken(

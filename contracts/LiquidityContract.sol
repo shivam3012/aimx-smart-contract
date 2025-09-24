@@ -79,7 +79,7 @@ contract LiquidityContract is OwnableUpgradeable {
         );
 
         //mint aimx to sell from coin contract
-        AiMAX(AIMX).mintTokenSupply(address(this), _sellAimxAmount);
+        AiMAX(payable(AIMX)).mintTokenSupply(address(this), _sellAimxAmount);
 
         uint256 _ethOutput = SwapAlgorithm._swapTokenForEth(
             _sellAimxAmount,
@@ -97,7 +97,7 @@ contract LiquidityContract is OwnableUpgradeable {
         );
 
         //mint fpr lp from coin contract
-        AiMAX(AIMX).mintTokenSupply(address(this), _aimxForLp);
+        AiMAX(payable(AIMX)).mintTokenSupply(address(this), _aimxForLp);
 
         IUniswapV2Router(UNISWAP_ROUTER_V2).addLiquidityETH{value: _ethOutput}(
             AIMX,
