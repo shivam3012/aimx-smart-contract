@@ -23,14 +23,6 @@ async function main() {
     const aimxAddress = await aimxProxy.getAddress();
     green(`Created AiMax ${aimxAddress}`);
 
-    dim(`Creating Registry Contract...`);
-    const registry = await ethers.getContractFactory('Registry');
-    const registryProxy = await upgrades.deployProxy(registry, []);
-    await registryProxy.waitForDeployment();
-    const registryAddress = await registryProxy.getAddress();
-    green(`Created Registry Contract ${registryAddress}`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
     dim(`Creating Star Capsule...`);
     const starCapsule = await ethers.getContractFactory('StarsCapsule');
     const starCapsuleProxy = await upgrades.deployProxy(starCapsule, ["staradam", "staradam", "0x"]);

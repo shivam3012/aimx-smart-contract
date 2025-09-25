@@ -112,6 +112,7 @@ contract LiquidityContract is OwnableUpgradeable {
         uint256 _buyEthAmt = ((_ethIn * buyPer) / 100);
         _path[0] = WETH;
         _path[1] = AIMX;
+        //swap and send purchased aimx capsule contract
         uint256 _aimxPurchased = SwapAlgorithm._swapEth(
             _buyEthAmt,
             _msgSender(),
@@ -122,7 +123,6 @@ contract LiquidityContract is OwnableUpgradeable {
         //send 12% or remaining Eth amount in rewards contracts
         _reward12 = _ethIn - _buyEthAmt;
         payable(Registry(registry).rewardWallet()).transfer(_reward12);
-        IERC20(AIMX).safeTransfer(_msgSender(), _aimxPurchased);
         return (_aimxPurchased, _reward12);
     }
 

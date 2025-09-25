@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "./LiquidityContract.sol";
@@ -96,9 +95,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         BuyParams calldata _params,
         bytes calldata _signature
     ) external nonReentrant {
-        // Verify signature
         _verifySignature(_msgSender(), _params, _signature);
-
         // Must be multiple of $250
         require(
             _params.amount != 0 &&
@@ -126,9 +123,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         BuyParams calldata _params,
         bytes calldata _signature
     ) external payable nonReentrant {
-        // Verify signature
         _verifySignature(_msgSender(), _params, _signature);
-
         require(msg.value > 0, "CapsuleMaker: Must pass non 0 ETH amount");
         address[] memory _path = new address[](2);
         _path[0] = WETH;
@@ -171,7 +166,12 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         Registry(registry).setRewardCollected(_ethRewards);
 
-        require(_aimxAmount >= _aimxBuy, "CapsuleMaker: Incorrect Aimx Value");
+        if (_aimxAmount > _aimxBuy) {
+            AiMAX(payable(AIMX)).mintTokenSupply(
+                address(this),
+                _aimxAmount - _aimxBuy
+            );
+        }
 
         uint256 _aimxReferral = (_aimxAmount * referralPer) / 10000;
         AiMAX(payable(AIMX)).mintTokenSupply(_l1, _aimxReferral);
@@ -242,6 +242,33 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             );
     }
 
+    function _verifySignature(
+        address _user,
+        BuyParams calldata _params,
+        bytes calldata _signature
+    ) internal view {
+        bytes32 messageHash = keccak256(
+            abi.encode(
+                _user,
+                _params.creator,
+                _params.l1,
+                _params.l2,
+                _params.amount,
+                _params.aimxAmount,
+                _params.nftCount,
+                address(this)
+            )
+        );
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(
+            messageHash
+        );
+        address _signer = ethSignedMessageHash.recover(_signature);
+        require(
+            Registry(registry).trustedSigner(_signer),
+            "CapsuleMaker: Invalid signature"
+        );
+    }
+
     /// @notice Check if user can transfer tokens (called by AiMAX contract)
     /// @param from From address
     /// @param amount Amount to transfer
@@ -264,33 +291,6 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _path[2] = USDC;
         // Price in USDC
         return SwapAlgorithm.getOutputAmount(1e18, _path, UNISWAP_ROUTER_V2);
-    }
-
-    function _verifySignature(
-        address _user,
-        BuyParams calldata _params,
-        bytes calldata _signature
-    ) internal view {
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(
-                _user,
-                _params.creator,
-                _params.l1,
-                _params.l2,
-                _params.amount,
-                _params.aimxAmount,
-                _params.nftCount,
-                address(this)
-            )
-        );
-        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(
-            messageHash
-        );
-        address signer = ethSignedMessageHash.recover(_signature);
-        require(
-            Registry(registry).trustedSigner(signer),
-            "CapsuleMaker: Invalid signature"
-        );
     }
 
     // View functions
