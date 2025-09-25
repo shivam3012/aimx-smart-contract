@@ -12,10 +12,9 @@ function green() {
 async function main() {
     const [deployer] = await ethers.getSigners();
 
-    const liquidityWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
-    const companyWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
-    const rewardWallet = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
-    const signer = '0xaA5330C23E9c768eD997D193C4458396aaC1e9d2';
+    const liquidityWallet = '0xDaEB208684F598c34757Af54Bf7a5D3a64e37e99';
+    const rewardWallet = '0xbeCEa30aBf95d38f192efA8C8686CA97bbE6522B';
+    const signer = '0x6dd1CEb1Ad247807e814C7Ab7c42C4f5E7857739';
     // const registryAddress = '0xbC13DF9d7E6E8Ef3882202a1AE353A9eDB99b6a5'
 
     // dim(`Attaching Registry Contract...`);
@@ -33,9 +32,9 @@ async function main() {
 
     dim(`Creating Liquidity Contract...`);
     const liquidity = await ethers.getContractFactory('LiquidityContract');
-    const liqidityProxy = await upgrades.deployProxy(liquidity, [liquidityWallet, registryAddress]);
-    await liqidityProxy.waitForDeployment();
-    const liquidityAddress = await liqidityProxy.getAddress();
+    const liquidityProxy = await upgrades.deployProxy(liquidity, [liquidityWallet, registryAddress]);
+    await liquidityProxy.waitForDeployment();
+    const liquidityAddress = await liquidityProxy.getAddress();
     green(`Created Liquidity Contract ${liquidityAddress}`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
@@ -63,17 +62,14 @@ async function main() {
     green(`Added Reward Treasury in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    await registryProxy.updateRewardWallet(companyWallet);
-    green(`Added Company Treasury in Registry`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
     await registryProxy.setTrustedSigner(signer, true);
     green(`Set Trusted Signer in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     //TODO on Remix manually
-    //add capsule maker in allowed list of star capsule to mint nft
-    //add capusle maker and liquidity contract in allowed list of aimax to mint tokens
+    //star capsule-- add capsule maker in allowed list of star capsule to mint nft
+    //aimax contract-- add capusle maker and liquidity contract in allowed list of aimax contract to mint tokens
+    //aimax contract-- add capsule maker in aimax contract and toggle capsule check
 }
 
 main()

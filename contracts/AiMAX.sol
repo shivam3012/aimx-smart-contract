@@ -30,7 +30,7 @@ contract AiMAX is ERC20BurnableUpgradeable, OwnableUpgradeable {
         uint256 _initialSupply,
         address _initial
     ) external initializer {
-        __ERC20_init("testadam", "testadam");
+        __ERC20_init("AiMAX", "AIMX");
         __ERC20Burnable_init();
         __Ownable_init(_msgSender());
         _mint(_initial, _initialSupply);

@@ -80,7 +80,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         referralPer = 500; // 5%
         creatorPer = 200; // 2%
         basketPrice = 250e6; //250$
-        ethPriceTolerance = 2e6; //2$
+        ethPriceTolerance = 5e6; //5$
 
         IERC20(USDC).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
         IERC20(AIMX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
@@ -279,7 +279,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         require(
             transferableTokens >= amount,
-            "CapsuleMaker: Cannot sell locked tokens - unlock baskets first"
+            "CapsuleMaker: Unlock baskets first"
         );
     }
 

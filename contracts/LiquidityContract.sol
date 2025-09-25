@@ -104,7 +104,7 @@ contract LiquidityContract is OwnableUpgradeable {
             _aimxForLp,
             0,
             0,
-            msg.sender,
+            liquidityWallet,
             block.timestamp + 1800
         );
 

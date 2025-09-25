@@ -39,11 +39,9 @@ contract StarsCapsule is
 
     /* -------------------- Initializer -------------------- */
     function initialize(
-        string memory _name,
-        string memory _symbol,
         string memory _baseURI
     ) external initializer {
-        __ERC721_init(_name, _symbol);
+        __ERC721_init("Star Capsule", "StarCapsule");
         __ERC721URIStorage_init();
         __Ownable_init(_msgSender());
         tokenId = 1;
@@ -176,6 +174,4 @@ contract StarsCapsule is
 
     /* -------------------- Fallback -------------------- */
     receive() external payable {}
-
-    fallback() external payable {}
 }

@@ -13,8 +13,8 @@ async function main() {
     const [deployer] = await ethers.getSigners();
 
     //4 miilion
-    const initialSupply = '138000000000000000000000000';
-    const initialMintAddress = '0x02aa8F4069fAE78889356DC1A1756C40b7887C14';
+    const initialSupply = '240000000000000000000000000';
+    const initialMintAddress = '0xC3f2cC649cAF296015DC497aCFD29dFCe159D110';
 
     dim(`Creating AiMax...`);
     const aimx = await ethers.getContractFactory('AiMAX');
@@ -25,7 +25,7 @@ async function main() {
 
     dim(`Creating Star Capsule...`);
     const starCapsule = await ethers.getContractFactory('StarsCapsule');
-    const starCapsuleProxy = await upgrades.deployProxy(starCapsule, ["staradam", "staradam", "0x"]);
+    const starCapsuleProxy = await upgrades.deployProxy(starCapsule, ["0x"]);
     await starCapsuleProxy.waitForDeployment();
     const starCapsuleAddress = await starCapsuleProxy.getAddress();
     green(`Created Star Capsule ${starCapsuleAddress}`);
@@ -40,8 +40,9 @@ async function main() {
 
 
     //TODO on Remix manually
-    //add capsule maker in allowed list of star capsule to mint nft
-    //add capusle maker and liquidity contract in allowed list of aimax to mint tokens
+    //star capsule-- add capsule maker in allowed list of star capsule to mint nft
+    //aimax contract-- add capusle maker and liquidity contract in allowed list of aimax contract to mint tokens
+    //aimax contract-- add capsule maker in aimax contract and toggle capsule check
 }
 
 main()
