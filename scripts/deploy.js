@@ -39,9 +39,9 @@ async function main() {
     // green(`Created Check Contract ${checkNftAddress}`);
 
 
-    //-------Pending-- need to do manually
-    //1.whitelist uniswap v2 address
-    //2.whitelist liquidity address
+    //TODO on Remix manually
+    //add capsule maker in allowed list of star capsule to mint nft
+    //add capusle maker and liquidity contract in allowed list of aimax to mint tokens
 }
 
 main()

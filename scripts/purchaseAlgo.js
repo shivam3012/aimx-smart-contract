@@ -70,6 +70,10 @@ async function main() {
     await registryProxy.setTrustedSigner(signer, true);
     green(`Set Trusted Signer in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    //TODO on Remix manually
+    //add capsule maker in allowed list of star capsule to mint nft
+    //add capusle maker and liquidity contract in allowed list of aimax to mint tokens
 }
 
 main()
