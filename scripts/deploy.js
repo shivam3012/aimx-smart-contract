@@ -17,11 +17,11 @@ async function main() {
     const initialMintAddress = '0xC3f2cC649cAF296015DC497aCFD29dFCe159D110';
 
     dim(`Creating AiMax...`);
-    const aimx = await ethers.getContractFactory('AiMAX');
-    const aimxProxy = await upgrades.deployProxy(aimx, [initialSupply, initialMintAddress]);
-    await aimxProxy.waitForDeployment();
-    const aimxAddress = await aimxProxy.getAddress();
-    green(`Created AiMax ${aimxAddress}`);
+    const aimax = await ethers.getContractFactory('AiMAX');
+    const aimaxProxy = await upgrades.deployProxy(aimax, [initialSupply, initialMintAddress]);
+    await aimaxProxy.waitForDeployment();
+    const aimaxAddress = await aimaxProxy.getAddress();
+    green(`Created AiMax ${aimaxAddress}`);
 
     dim(`Creating Star Capsule...`);
     const starCapsule = await ethers.getContractFactory('StarsCapsule');

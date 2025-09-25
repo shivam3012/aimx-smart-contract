@@ -9,8 +9,8 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 import "./LiquidityContract.sol";
 import "./uniswap/SwapAlgorithm.sol";
 import "./Registry.sol";
-import "./StarsCapsule.sol";
-import "./AiMAX.sol";
+import "./StarsCapsuleNFT.sol";
+import "./AIMAXCoin.sol";
 
 contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
@@ -18,12 +18,12 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     struct PurchaseData {
         address user;
-        uint256 aimxBuy;
+        uint256 aimaxBuy;
         address l1;
         address l2;
-        uint256 referralAimx;
+        uint256 referralAimax;
         address creator;
-        uint256 creatorAimx;
+        uint256 creatorAimax;
         uint256 nftCount;
         uint256 coinPrice; // Current price when purchased
     }
@@ -33,7 +33,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address l1;
         address l2;
         uint256 amount;
-        uint256 aimxAmount;
+        uint256 aimaxAmount;
         uint256 nftCount;
     }
 
@@ -48,7 +48,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     address public constant UNISWAP_ROUTER_V2 =
         0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
-    address public constant AIMX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
+    address public constant AIMAX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant StarCapsule =
@@ -83,7 +83,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         ethPriceTolerance = 5e6; //5$
 
         IERC20(USDC).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
-        IERC20(AIMX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
+        IERC20(AIMAX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
     }
 
     function approveThis(address _token, address _addr) external onlyOwner {
@@ -113,7 +113,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             _params.l1,
             _params.l2,
             _convertedUsdc,
-            _params.aimxAmount,
+            _params.aimaxAmount,
             _params.nftCount
         );
     }
@@ -144,7 +144,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             _params.l1,
             _params.l2,
             _params.amount,
-            _params.aimxAmount,
+            _params.aimaxAmount,
             _params.nftCount
         );
     }
@@ -154,52 +154,52 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address _l1,
         address _l2,
         uint256 _usdcAmt,
-        uint256 _aimxAmount,
+        uint256 _aimaxAmount,
         uint256 _nftCount
     ) internal {
         // Get current coin price for basket tracking
         uint256 currentCoinPrice = getCurrentCoinPrice();
 
-        (uint256 _aimxBuy, uint256 _ethRewards) = LiquidityContract(
+        (uint256 _aimaxBuy, uint256 _ethRewards) = LiquidityContract(
             payable(Registry(registry).liquidityContrAddr())
         ).performLiqudityOp{value: msg.value}(_usdcAmt);
 
         Registry(registry).setRewardCollected(_ethRewards);
 
-        if (_aimxAmount > _aimxBuy) {
-            AiMAX(payable(AIMX)).mintTokenSupply(
+        if (_aimaxAmount > _aimaxBuy) {
+            AIMAXCoin(payable(AIMAX)).mintTokenSupply(
                 address(this),
-                _aimxAmount - _aimxBuy
+                _aimaxAmount - _aimaxBuy
             );
         }
 
-        uint256 _aimxReferral = (_aimxAmount * referralPer) / 10000;
-        AiMAX(payable(AIMX)).mintTokenSupply(_l1, _aimxReferral);
-        AiMAX(payable(AIMX)).mintTokenSupply(_l2, _aimxReferral);
+        uint256 _aimaxReferral = (_aimaxAmount * referralPer) / 10000;
+        AIMAXCoin(payable(AIMAX)).mintTokenSupply(_l1, _aimaxReferral);
+        AIMAXCoin(payable(AIMAX)).mintTokenSupply(_l2, _aimaxReferral);
 
-        uint256 _aimxCreator;
+        uint256 _aimaxCreator;
         if (_creator != address(0)) {
-            _aimxCreator = (_aimxAmount * creatorPer) / 10000;
-            IERC20(AIMX).safeTransfer(_creator, _aimxCreator);
+            _aimaxCreator = (_aimaxAmount * creatorPer) / 10000;
+            IERC20(AIMAX).safeTransfer(_creator, _aimaxCreator);
         }
 
         // Send swapped tokens directly to user (these will be locked by default)
-        IERC20(AIMX).safeTransfer(_msgSender(), _aimxAmount);
+        IERC20(AIMAX).safeTransfer(_msgSender(), _aimaxAmount);
         // Add to user's locked tokens (backend will manage baskets)
-        lockedTokens[_msgSender()] += _aimxAmount;
+        lockedTokens[_msgSender()] += _aimaxAmount;
 
         // Mint NFTs
-        StarsCapsule(payable(StarCapsule)).batchMint(_msgSender(), _nftCount);
+        StarsCapsuleNFT(payable(StarCapsule)).batchMint(_msgSender(), _nftCount);
 
         emit Purchased(
             PurchaseData(
                 _msgSender(),
-                _aimxAmount,
+                _aimaxAmount,
                 _l1,
                 _l2,
-                _aimxReferral,
+                _aimaxReferral,
                 _creator,
-                _aimxCreator,
+                _aimaxCreator,
                 _nftCount,
                 currentCoinPrice
             )
@@ -254,7 +254,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 _params.l1,
                 _params.l2,
                 _params.amount,
-                _params.aimxAmount,
+                _params.aimaxAmount,
                 _params.nftCount,
                 address(this)
             )
@@ -269,12 +269,12 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
     }
 
-    /// @notice Check if user can transfer tokens (called by AiMAX contract)
+    /// @notice Check if user can transfer tokens (called by AIMAXCoin contract)
     /// @param from From address
     /// @param amount Amount to transfer
     function checkTransfer(address from, uint256 amount) external view {
         // If selling to Uniswap, check if user has enough transferable tokens
-        uint256 totalBalance = IERC20(AIMX).balanceOf(from);
+        uint256 totalBalance = IERC20(AIMAX).balanceOf(from);
         uint256 transferableTokens = totalBalance - lockedTokens[from];
 
         require(
@@ -283,10 +283,10 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
     }
 
-    /// @notice Get current AiMAX price from Uniswap
+    /// @notice Get current AIMAXCoin price from Uniswap
     function getCurrentCoinPrice() public view returns (uint256) {
         address[] memory _path = new address[](3);
-        _path[0] = AIMX;
+        _path[0] = AIMAX;
         _path[1] = WETH;
         _path[2] = USDC;
         // Price in USDC
@@ -301,7 +301,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         view
         returns (uint256 locked, uint256 transferable, uint256 total)
     {
-        total = IERC20(AIMX).balanceOf(user);
+        total = IERC20(AIMAX).balanceOf(user);
         locked = lockedTokens[user];
         transferable = total - locked; // All non-locked tokens are transferable
     }
@@ -310,7 +310,7 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address user,
         uint256 amount
     ) external view returns (bool) {
-        uint256 totalBalance = IERC20(AIMX).balanceOf(user);
+        uint256 totalBalance = IERC20(AIMAX).balanceOf(user);
         uint256 transferableTokens = totalBalance - lockedTokens[user];
         return transferableTokens >= amount;
     }

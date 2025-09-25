@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./AiMAX.sol";
+import "./AIMAXCoin.sol";
 import "./uniswap/SwapAlgorithm.sol";
 import "./uniswap/ISwapRouter.sol";
 import "./uniswap/IQuoter.sol";
@@ -20,7 +20,7 @@ contract LiquidityContract is OwnableUpgradeable {
 
     address public constant PAIR = 0x7bD28DEAAe1c78ce8aD3f9dD627F4f7d72B3481e;
 
-    address public constant AIMX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
+    address public constant AIMAX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant QUOTER = 0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a;
@@ -48,7 +48,7 @@ contract LiquidityContract is OwnableUpgradeable {
         registry = _registry;
         IERC20(USDC).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
         IERC20(USDC).forceApprove(UNISWAP_ROUTER_V3, type(uint128).max);
-        IERC20(AIMX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
+        IERC20(AIMAX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
     }
 
     function approveThis(address _token, address _addr) external onlyOwner {
@@ -63,57 +63,57 @@ contract LiquidityContract is OwnableUpgradeable {
             "LiquidityContract: Only authorized"
         );
 
-        //get user actual aimx given with eth input
+        //get user actual aimax given with eth input
         address[] memory _path = new address[](2);
 
-        _path[0] = AIMX;
+        _path[0] = AIMAX;
         _path[1] = WETH;
 
-        //sell 66% aimx for eth
-        //66% of eth in terms of aimx will be sold
-        //means aimx is sold to get eth
-        uint256 _sellAimxAmount = SwapAlgorithm.getInputAmount(
+        //sell 66% aimax for eth
+        //66% of eth in terms of aimax will be sold
+        //means aimax is sold to get eth
+        uint256 _sellAimaxAmount = SwapAlgorithm.getInputAmount(
             ((_ethIn * sellPer) / 100),
             _path,
             UNISWAP_ROUTER_V2
         );
 
-        //mint aimx to sell from coin contract
-        AiMAX(payable(AIMX)).mintTokenSupply(address(this), _sellAimxAmount);
+        //mint aimax to sell from coin contract
+        AIMAXCoin(payable(AIMAX)).mintTokenSupply(address(this), _sellAimaxAmount);
 
         uint256 _ethOutput = SwapAlgorithm._swapTokenForEth(
-            _sellAimxAmount,
+            _sellAimaxAmount,
             address(this),
             UNISWAP_ROUTER_V2,
             _path
         );
 
         //add liquidity-send lp to reward contract
-        uint256 _aimxForLp = SwapAlgorithm._secondTokenAmountForLp(
+        uint256 _aimaxForLp = SwapAlgorithm._secondTokenAmountForLp(
             (_ethOutput * liquidityPer) / 100,
             PAIR,
             WETH,
-            AIMX
+            AIMAX
         );
 
         //mint fpr lp from coin contract
-        AiMAX(payable(AIMX)).mintTokenSupply(address(this), _aimxForLp);
+        AIMAXCoin(payable(AIMAX)).mintTokenSupply(address(this), _aimaxForLp);
 
         IUniswapV2Router(UNISWAP_ROUTER_V2).addLiquidityETH{value: _ethOutput}(
-            AIMX,
-            _aimxForLp,
+            AIMAX,
+            _aimaxForLp,
             0,
             0,
             liquidityWallet,
             block.timestamp + 1800
         );
 
-        //buy 88% aimx with eth
+        //buy 88% aimax with eth
         uint256 _buyEthAmt = ((_ethIn * buyPer) / 100);
         _path[0] = WETH;
-        _path[1] = AIMX;
-        //swap and send purchased aimx capsule contract
-        uint256 _aimxPurchased = SwapAlgorithm._swapEth(
+        _path[1] = AIMAX;
+        //swap and send purchased aimax capsule contract
+        uint256 _aimaxPurchased = SwapAlgorithm._swapEth(
             _buyEthAmt,
             _msgSender(),
             UNISWAP_ROUTER_V2,
@@ -123,7 +123,7 @@ contract LiquidityContract is OwnableUpgradeable {
         //send 12% or remaining Eth amount in rewards contracts
         _reward12 = _ethIn - _buyEthAmt;
         payable(Registry(registry).rewardWallet()).transfer(_reward12);
-        return (_aimxPurchased, _reward12);
+        return (_aimaxPurchased, _reward12);
     }
 
     function updateSellPer(uint256 _sellPer) external onlyOwner {
