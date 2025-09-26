@@ -18,9 +18,8 @@ contract LiquidityContract is OwnableUpgradeable {
     address public constant UNISWAP_ROUTER_V2 =
         0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
 
-    address public constant PAIR = 0x7bD28DEAAe1c78ce8aD3f9dD627F4f7d72B3481e;
-
-    address public constant AIMAX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
+    address public constant PAIR = 0xd62c3E09F200D3C23538899b50321087B4C91cBA;
+    address public constant AIMAX = 0x092833e857e96B52692034E35Ec7a8405E503fBA;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant QUOTER = 0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a;
@@ -47,7 +46,6 @@ contract LiquidityContract is OwnableUpgradeable {
         liquidityWallet = _liquidityWallet;
         registry = _registry;
         IERC20(USDC).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
-        IERC20(USDC).forceApprove(UNISWAP_ROUTER_V3, type(uint128).max);
         IERC20(AIMAX).forceApprove(UNISWAP_ROUTER_V2, type(uint128).max);
     }
 

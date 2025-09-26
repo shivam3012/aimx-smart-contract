@@ -14,7 +14,7 @@ async function main() {
 
     //4 miilion
     const initialSupply = '240000000000000000000000000';
-    const initialMintAddress = '0xC3f2cC649cAF296015DC497aCFD29dFCe159D110';
+    const initialMintAddress = '0x7cDD7413039a93973E03ae7eC3A3C66d46EAc268';
 
     dim(`Creating AiMax...`);
     const aimax = await ethers.getContractFactory('AiMAX');

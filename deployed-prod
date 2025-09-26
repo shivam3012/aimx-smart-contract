@@ -1,17 +1,31 @@
-Compiled 4 Solidity files successfully (evm target: paris).
-Creating AiMax...
-Created AiMax 0x1655C2AE81B402dA3656c8Eda7157ccB3CEBaA35
-Creating Star Capsule...
-Created Star Capsule 0xF4BFE0DeF2586ca901DbED520fCf4b92fFF6d2f7
+AIMAX and Star Capsule are deployed using remix with proxy
+
+Solidity verison 0.20
+evm version- prague
+
+AIMAX ---
+Implementation- 0x51B4310980115bF8769674e397D6DCF8CCEe5A97
+
+Proxy- 0x092833e857e96B52692034E35Ec7a8405E503fBA
+
+
+Star Capsule ---
+Implementation- 0xF9EEb95eaE2CD56cF6e81ad471b97903eE683FC3
+
+Proxy- 0xFF167F262aD13809189f086b5B49FEC28BE2e66F
 
 
 
+-----------------
+Deployed through Hardhat
+
+----------------------
 Creating Registry Contract...
-Created Registry Contract 0x5CE536fc33416fE3df1e5c2E68f8c0B9f784f945
+Created Registry Contract 0x4eEC3a71Be514D8A30a905c5f9E85a438A5468c6
 Creating Liquidity Contract...
-Created Liquidity Contract 0xaC2c26Bd784186f366796362ECb78ed9c32CAC13
+Created Liquidity Contract 0x56188989cc66550735b32F897a2bFaCb907A5762
 Creating Capsule Maker...
-Created Capsule Maker 0x23D4D6EDD26331b14e3e4Fa5923af5a0c1E53f05
+Created Capsule Maker 0x722Caa26A23D98E371d9CF7da2A64Bc0BdE58726
 Added Capsule Maker in Registry
 Set authorized purchase maker to call liquidity contract
 Added Liquidity Contract in Registry

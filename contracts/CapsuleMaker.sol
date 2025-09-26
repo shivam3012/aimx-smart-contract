@@ -16,6 +16,14 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
 
+    event Purchased(PurchaseData _purchase);
+    event TokensUnlocked(
+        address indexed user,
+        uint256 amount,
+        uint256[] nftIds,
+        bytes32 basketHash
+    );
+
     struct PurchaseData {
         address user;
         uint256 aimaxBuy;
@@ -37,22 +45,13 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 nftCount;
     }
 
-    event Purchased(PurchaseData _purchase);
-
-    event TokensUnlocked(
-        address indexed user,
-        uint256 amount,
-        uint256[] nftIds,
-        bytes32 basketHash
-    );
-
     address public constant UNISWAP_ROUTER_V2 =
         0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
-    address public constant AIMAX = 0x66D89ab6B0e953E7abc0E00715aBbf7054ccC34a;
+    address public constant AIMAX = 0x092833e857e96B52692034E35Ec7a8405E503fBA;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     address public constant StarCapsule =
-        0xB564e2A84B69e52F5C49B12842d5E9A66DBcF551;
+        0xFF167F262aD13809189f086b5B49FEC28BE2e66F;
 
     address public registry;
     uint256 public referralPer; // 5%
@@ -189,7 +188,10 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         lockedTokens[_msgSender()] += _aimaxAmount;
 
         // Mint NFTs
-        StarsCapsuleNFT(payable(StarCapsule)).batchMint(_msgSender(), _nftCount);
+        StarsCapsuleNFT(payable(StarCapsule)).batchMint(
+            _msgSender(),
+            _nftCount
+        );
 
         emit Purchased(
             PurchaseData(
@@ -224,6 +226,11 @@ contract CapsuleMaker is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         // Simply reduce locked tokens - the difference becomes transferable
         lockedTokens[user] -= amount;
         emit TokensUnlocked(user, amount, nftIds, basketHash);
+    }
+
+    //calculate current locked and then update the new locked
+    function protectTokens(address user, uint256 amount) external onlyOwner {
+        lockedTokens[user] = amount;
     }
 
     function _convertUsdcToEth(uint256 _amount) internal returns (uint256) {

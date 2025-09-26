@@ -9,7 +9,12 @@ function green() {
     console.log(chalk.green.call(chalk, ...arguments))
 }
 
+//Before deployment make sure--
+// set current aimax address in liquidity and capsule maker 
+// set current star capsule address in liquidity and capsule maker
+// set current pair address in liquidity
 async function main() {
+
     const [deployer] = await ethers.getSigners();
 
     const liquidityWallet = '0xDaEB208684F598c34757Af54Bf7a5D3a64e37e99';
@@ -46,12 +51,12 @@ async function main() {
     green(`Created Capsule Maker ${capsuleMakerAddress}`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    await registryProxy.updateCapsuleMakerContract(capsuleMakerAddress);
-    green(`Added Capsule Maker in Registry`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
     await registryProxy.setAuthorizedContract(capsuleMakerAddress, true);
     green(`Set authorized purchase maker to call liquidity contract`);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    await registryProxy.updateCapsuleMakerContract(capsuleMakerAddress);
+    green(`Added Capsule Maker in Registry`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     await registryProxy.updateLiquidityContract(liquidityAddress);
