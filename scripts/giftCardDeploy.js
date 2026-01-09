@@ -14,13 +14,20 @@ async function main() {
 
     const registryAddress = '0x583117167281E813E7EcC2474cAc6b1f272bC1A4';
 
-    dim(`Creating Gift Card...`);
-    const giftCard = await ethers.getContractFactory('GiftCard');
-    const giftCardProxy = await upgrades.deployProxy(giftCard, ["0x", registryAddress]);
-    await giftCardProxy.waitForDeployment();
-    const giftCardAddress = await giftCardProxy.getAddress();
-    green(`Created Gift Card ${giftCardAddress}`);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // dim(`Creating Gift Card...`);
+    // const giftCard = await ethers.getContractFactory('GiftCard');
+    // const giftCardProxy = await upgrades.deployProxy(giftCard, ["0x", registryAddress]);
+    // await giftCardProxy.waitForDeployment();
+    // const giftCardAddress = await giftCardProxy.getAddress();
+    // green(`Created Gift Card ${giftCardAddress}`);
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    dim(`Creating Check Contract...`);
+    const checkNft = await ethers.getContractFactory('Check');
+    const checkNftProxy = await upgrades.deployProxy(checkNft, []);
+    await checkNftProxy.waitForDeployment();
+    const checkNftAddress = await checkNftProxy.getAddress();
+    green(`Created Check Contract ${checkNftAddress}`);
 
 }
 

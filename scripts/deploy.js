@@ -31,13 +31,6 @@ async function main() {
     green(`Created Star Capsule ${starCapsuleAddress}`);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // dim(`Creating Check Contract...`);
-    // const checkNft = await ethers.getContractFactory('Check');
-    // const checkNftProxy = await upgrades.deployProxy(checkNft, []);
-    // await checkNftProxy.waitForDeployment();
-    // const checkNftAddress = await checkNftProxy.getAddress();
-    // green(`Created Check Contract ${checkNftAddress}`);
-
 
     //TODO on Remix manually
     //star capsule-- add capsule maker in allowed list of star capsule to mint nft

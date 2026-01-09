@@ -7,8 +7,8 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 contract Check is OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
-    address public constant MNM = 0x22C74D9400088F7F35eC7C591Bbd1945A14b69bc;
-    address public constant MNM_LP = 0x080aD650Ce2a7b3D1B579c7eBceB59ea452748dB;
+    address public constant AIMAX = 0x092833e857e96B52692034E35Ec7a8405E503fBA;
+    address public constant AIMAX_LP = 0xd62c3E09F200D3C23538899b50321087B4C91cBA;
 
     uint256 public sellLimit;
     uint256 public coolDownTime;
@@ -52,11 +52,11 @@ contract Check is OwnableUpgradeable {
         address to,
         uint256 amount
     ) external view {
-        //only mnm coin contract
-        require(_msgSender() == MNM, "Invalid sender");
+        //only aimax coin contract
+        require(_msgSender() == AIMAX, "Invalid sender");
         if (!whitelabel[from]) {
             if (isEnabled) {
-                if (to == MNM_LP) {
+                if (to == AIMAX_LP) {
                     revert("Cooling down");
                 }
             }

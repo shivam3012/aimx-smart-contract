@@ -12,8 +12,8 @@ function green() {
 async function main() {
     const [deployer] = await ethers.getSigners();
 
-    const artifactName = 'CapsuleMaker'
-    const contractAddress = '0x8Bf06E6e9b40EF9F80C9740fCb94677d1317fa87'
+    const artifactName = 'LiquidityContract'
+    const contractAddress = '0x56188989cc66550735b32F897a2bFaCb907A5762'
 
     const customNft = await ethers.getContractFactory(artifactName);
 
